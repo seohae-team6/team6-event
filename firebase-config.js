@@ -7,15 +7,14 @@
 //  누가 글을 쓰고 지울 수 있는지는 firestore.rules(보안 규칙)가 지켜 줘요.
 // =====================================================================
 export const firebaseConfig = {
-  apiKey: "여기에-apiKey",
-  authDomain: "여기에-프로젝트ID.firebaseapp.com",
-  projectId: "여기에-프로젝트ID",
-  storageBucket: "여기에-프로젝트ID.appspot.com",
-  messagingSenderId: "여기에-messagingSenderId",
-  appId: "여기에-appId",
+  apiKey: "AIzaSyAW8NBHFgO6LMDxnM9zdwzfJFh2AllSZJc",
+  authDomain: "seohaering.firebaseapp.com",
+  projectId: "seohaering",
+  storageBucket: "seohaering.firebasestorage.app",
+  messagingSenderId: "198968540416",
+  appId: "1:198968540416:web:041d0960dde78883cf07e5",
 };
 
 // 관리자 로그인 아이디 뒤에 자동으로 붙는 주소예요.
 // 로그인 창에 'admin'이라고 적으면 admin@seohaering.app 계정으로 로그인해요.
 // (Firebase에서 만든 관리자 계정의 이메일과 맞아야 해요)
-export const ADMIN_EMAIL_DOMAIN = "seohaering.app";
