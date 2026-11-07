@@ -275,6 +275,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
 .code-input { text-align: center; letter-spacing: .5em; font-size: 1.6rem !important; font-weight: 700; }
 
 /* 관리자 조절 */
+.edit-row { border-top: 1px solid var(--line); padding-top: 16px; }
 .adm { border: 2px solid var(--sun); border-radius: 14px; padding: 16px; display: grid; gap: 14px; }
 .adm h3 { font-size: 1rem; color: var(--sun); }
 .steppers { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
@@ -338,16 +339,12 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       <button class="clear" id="qClear" type="button" aria-label="검색어 지우기" hidden>×</button>
     </div>
     <div class="menu-wrap">
-      <span class="admin-chip" id="adminChip" hidden>관리자</span>
       <button class="menu-btn" id="menuBtn" type="button" aria-haspopup="true" aria-expanded="false">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         메뉴
       </button>
       <div class="menu" id="menu" hidden>
         <button type="button" data-menu="share" id="mShare">링크 공유하기</button>
-        <button type="button" data-menu="login" id="mLogin">관리자 모드</button>
-        <button type="button" data-menu="admin" id="mAdmin" hidden>관리자 메뉴</button>
-        <button type="button" data-menu="logout" id="mLogout" class="danger" hidden>관리자 모드 끄기</button>
       </div>
     </div>
   </div>
@@ -359,13 +356,13 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       <button type="button" role="tab" id="tabDate" aria-selected="true">날짜별</button>
       <button type="button" role="tab" id="tabCal" aria-selected="false">달력</button>
     </div>
-    <button class="btn btn-sun" id="addBtn" type="button" hidden>+ 등록</button>
+    <button class="btn btn-sun" id="addBtn" type="button">+ 등록</button>
   </div>
   <p class="result" id="result" aria-live="polite"></p>
   <section id="list" aria-label="참여 가능한 이벤트"></section>
   <section class="expired" id="expired" aria-labelledby="expTitle" hidden>
     <h2 id="expTitle">만료된 이벤트</h2>
-    <p>날짜가 끝난 이벤트예요. 관리자가 지울 때까지 여기에 남아 있어요.</p>
+    <p>날짜가 끝난 이벤트예요. 삭제할 때까지 여기에 남아 있어요.</p>
     <div class="cards" id="expList"></div>
   </section>
 </main>
@@ -373,26 +370,15 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
 <!-- 상세 -->
 <dialog id="dlgDetail" aria-labelledby="dTitle"><div class="dlg" id="detailBody"></div></dialog>
 
-<!-- 관리자 모드 -->
-<dialog id="dlgLogin" aria-labelledby="lTitle">
-  <form class="dlg" id="loginForm" novalidate>
-    <div class="dlg-head"><h2 id="lTitle">관리자 모드</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
-    <div class="field"><label for="lPw">관리자 코드</label><input id="lPw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
-    <p class="warn">⚠ 대문자와 소문자를 구분해요.</p>
-    <p class="err" id="lErr" aria-live="polite"></p>
-    <div class="actions"><button class="btn btn-ghost" type="button" data-close>취소</button><button class="btn btn-primary" type="submit">확인</button></div>
-  </form>
-</dialog>
-
-<!-- 등록 코드 -->
+<!-- 코드 입력 (등록·수정·삭제할 때마다) -->
 <dialog id="dlgCode" aria-labelledby="cTitle">
   <form class="dlg" id="codeForm" novalidate>
-    <div class="dlg-head"><h2 id="cTitle">등록 코드 입력</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
-    <p>이벤트를 등록하려면 6자리 등록 코드를 입력하세요.</p>
-    <div class="field"><label for="cCode">등록 코드</label><input id="cCode" class="code-input" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="cWarn"></div>
+    <div class="dlg-head"><h2 id="cTitle">코드 입력</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
+    <p id="cMsg"></p>
+    <div class="field"><label for="cCode">코드</label><input id="cCode" class="code-input" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="cWarn"></div>
     <p class="warn" id="cWarn">⚠ 대문자와 소문자를 구분해요. 정확히 입력해 주세요.</p>
     <p class="err" id="cErr" aria-live="polite"></p>
-    <div class="actions"><button class="btn btn-ghost" type="button" data-close>취소</button><button class="btn btn-primary" type="submit">확인</button></div>
+    <div class="actions"><button class="btn btn-ghost" type="button" data-close>취소</button><button class="btn btn-primary" type="submit" id="cOk">확인</button></div>
   </form>
 </dialog>
 
@@ -412,7 +398,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     <div class="field"><label for="fApply">신청 받는 곳</label><input id="fApply" maxlength="100" placeholder="예: 2층 학생회실 앞 신청함"></div>
     <div class="field"><label for="fLink">온라인 신청 링크 (선택)</label><input id="fLink" type="url" placeholder="https://"></div>
     <p class="err" id="fErr" aria-live="polite"></p>
-    <div class="actions"><button class="btn btn-ghost" type="button" data-close>취소</button><button class="btn btn-sun" type="submit">등록하기</button></div>
+    <div class="actions"><button class="btn btn-ghost" type="button" data-close>취소</button><button class="btn btn-sun" type="submit" id="fOk">등록하기</button></div>
   </form>
 </dialog>
 
@@ -427,16 +413,14 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   </div>
 </dialog>
 
-<!-- 관리자 메뉴 -->
-<dialog id="dlgAdmin" aria-labelledby="aTitle"><div class="dlg" id="adminBody"></div></dialog>
 
 <div id="toast" role="status" hidden></div>
 
 <script>
 (() => {
   "use strict";
-  // 등록 코드는 화면에서만 확인하는 한 번 더 묻는 장치예요. 진짜 보안은 관리자 코드(Firebase) + firestore.rules가 맡아요.
-  const REG_CODE = "qwerty";
+  // 게시물을 등록·수정·삭제할 때마다 코드를 물어봐요.
+  // 코드는 Firebase 관리자 계정(admin@ADMIN_EMAIL_DOMAIN)의 비밀번호라서 이 파일에 적혀 있지 않아요.
   const WEEK = 7 * 24 * 60 * 60 * 1000;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -541,11 +525,10 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       const [appM, fsM, authM] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-firestore.js"), import(FB + "firebase-auth.js")]);
       const app = appM.initializeApp(c);
       fb = { ...fsM, ...authM }; fs = fsM.getFirestore(app); auth = authM.getAuth(app);
-      // 관리자 모드는 브라우저 창(탭)을 닫으면 꺼져요. 공용 컴퓨터에 남지 않게.
-      try { await authM.setPersistence(auth, authM.browserSessionPersistence); } catch {}
+      // 코드 확인은 한 번 쓸 때만 유지돼요. 새로고침하거나 작업이 끝나면 바로 풀려요.
+      try { await authM.setPersistence(auth, authM.inMemoryPersistence); } catch {}
     } catch { return startOffline("Firebase에 연결하지 못했어요. 인터넷 연결을 확인해 주세요."); }
     mode = "shared";
-    fb.onAuthStateChanged(auth, (u) => { setAdmin(!!u); render(); refreshOpen(); });
     const timer = setTimeout(() => { if (!loaded) { loadNote = "이벤트를 아직 불러오지 못했어요. 인터넷 연결을 확인해 주세요."; render(); } }, 10000);
     fb.onSnapshot(fb.collection(fs, "events"), (snap) => {
       events = snap.docs.map((x) => ({ ...x.data(), id: x.id }));
@@ -558,7 +541,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   }
   const ref = (id) => fb.doc(fs, "events", id);
 
-  const NO_RIGHT = "저장하지 못했어요. 관리자 모드를 다시 켜 주세요.";
+  const NO_RIGHT = "저장하지 못했어요. 코드를 다시 입력해 주세요.";
   const OFFLINE = "Firebase에 연결된 뒤에 저장할 수 있어요.";
   const why = (err, fallback) => (err && err.code === "permission-denied" ? NO_RIGHT : fallback);
   async function saveEvent(id, patch) {
@@ -575,14 +558,8 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   }
 
   /* ================= 화면 상태 ================= */
-  const ui = { tab: "date", q: "", admin: false, openId: null,
+  const ui = { tab: "date", q: "", openId: null,
     calMonth: new Date(today0().getFullYear(), today0().getMonth(), 1), calDay: ymd(today0()) };
-
-  function setAdmin(on) {
-    ui.admin = on;
-    $("mLogin").hidden = on; $("mAdmin").hidden = !on; $("mLogout").hidden = !on;
-    $("adminChip").hidden = !on; $("addBtn").hidden = !on;
-  }
 
   /* ================= 목록 그리기 ================= */
   function card(e) {
@@ -729,21 +706,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   });
 
   /* ================= 상세 화면 ================= */
-  function adminControls(e, prefix) {
-    const id = esc(e.id);
-    return `<div class="adm" data-adm="${id}">
-      <h3>관리자 · 기간</h3>
-      <div class="row2">
-        <div class="field"><label for="${prefix}start-${id}">시작 날짜</label><input type="date" id="${prefix}start-${id}" data-f="start" value="${esc(e.date || "")}"></div>
-        <div class="field"><label for="${prefix}end-${id}">끝 날짜</label><input type="date" id="${prefix}end-${id}" data-f="end" value="${esc(endOf(e) || "")}"></div>
-      </div>
-      <div class="actions">
-        <button type="button" class="btn btn-danger" data-del>게시물 삭제</button>
-        <button type="button" class="btn btn-primary" data-save>저장</button>
-      </div>
-    </div>`;
-  }
-
   function detailHTML(e) {
     const safeLink = /^https?:\/\//i.test(e.link || "") ? e.link : "";
     return `<div class="dlg-head"><h2 id="dTitle">${esc(e.title)}</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
@@ -756,7 +718,10 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       <p class="desc">${esc(e.desc || "설명이 없어요.")}</p>
       <div class="apply"><h3>신청 받는 곳</h3><p>${esc(e.apply || "미정")}</p>
         ${safeLink ? `<a href="${esc(safeLink)}" target="_blank" rel="noopener">온라인으로 신청하기 ↗</a>` : ""}</div>
-      ${ui.admin ? adminControls(e, "d-") : ""}`;
+      <div class="actions edit-row">
+        <button type="button" class="btn btn-danger" data-del="${esc(e.id)}">삭제</button>
+        <button type="button" class="btn btn-primary" data-edit="${esc(e.id)}">수정</button>
+      </div>`;
   }
 
   function openDetail(id) {
@@ -769,103 +734,81 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     if (d.open && ui.openId) {
       const e = events.find((x) => x.id === ui.openId);
       if (!e) { d.close(); return; }
-      // 관리자가 바꾸고 아직 저장 안 한 값이 있으면 화면을 새로 그리지 않아요
-      if (!d.querySelector("[data-adm][data-dirty]")) $("detailBody").innerHTML = detailHTML(e);
+      $("detailBody").innerHTML = detailHTML(e);
     }
-    const a = $("dlgAdmin");
-    if (a.open && !a.querySelector("[data-adm][data-dirty]")) renderAdmin();
   }
 
-  /* ================= 관리자 메뉴 ================= */
-  function renderAdmin() {
-    const list = events.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
-    $("adminBody").innerHTML = `<div class="dlg-head"><h2 id="aTitle">관리자 메뉴</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
-      <p>게시물 ${list.length}개 · 만료 ${list.filter(isPast).length}개</p>
-      <div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-sun" data-new>+ 이벤트 등록</button></div>
-      <div class="adm-list">${list.length ? list.map((e) => `<div class="adm-item"><h3>${esc(e.title)} <span class="meta">${esc(rangeText(e))}</span></h3>${adminControls(e, "a-")}</div>`).join("") : `<div class="empty"><strong>게시물이 없어요</strong>+ 이벤트 등록으로 첫 게시물을 올려 보세요.</div>`}</div>`;
-  }
-
-  // 관리자 조절 버튼 (상세 화면과 관리자 메뉴에서 같이 씀)
-  document.addEventListener("click", async (ev) => {
-    const box = ev.target.closest("[data-adm]"); if (!box) return;
-    const id = box.dataset.adm, e = events.find((x) => x.id === id); if (!e) return;
-    if (ev.target.closest("[data-save]")) {
-      const start = box.querySelector('[data-f="start"]').value, end = box.querySelector('[data-f="end"]').value;
-      if (!start) { toast("시작 날짜를 골라 주세요."); return; }
-      if (end && end < start) { toast("끝 날짜는 시작 날짜보다 빠를 수 없어요."); return; }
-      const patch = { date: start, endDate: end && end > start ? end : "" };
-      const was = isPast(e), now = isPast(patch);
-      delete box.dataset.dirty;
-      if (await saveEvent(id, patch)) toast(now && !was ? "끝난 날짜라서 만료 칸으로 옮겼어요." : !now && was ? "날짜가 바뀌어서 다시 목록에 보여요." : "저장했어요.");
-      return;
-    }
-    const del = ev.target.closest("[data-del]");
-    if (del) {
-      if (!del.classList.contains("solid")) {
-        del.classList.add("solid"); del.textContent = "한 번 더 누르면 삭제돼요";
-        setTimeout(() => { if (del.isConnected) { del.classList.remove("solid"); del.textContent = "게시물 삭제"; } }, 4000);
-        return;
-      }
-      if (await removeEvent(id)) { toast("게시물을 삭제했어요."); if (ui.openId === id) $("dlgDetail").close(); if ($("dlgAdmin").open) renderAdmin(); }
-    }
-  });
-
-  // 관리자 칸에 직접 입력하면 '저장 안 한 값 있음'으로 표시
-  document.addEventListener("input", (ev) => {
-    const box = ev.target.closest("[data-adm]"); if (box) box.dataset.dirty = "1";
-  });
-
-  document.addEventListener("change", (ev) => {
-    const box = ev.target.closest("[data-adm]"); if (box) box.dataset.dirty = "1";
+  // 상세 화면의 수정·삭제 버튼 → 코드 입력
+  document.addEventListener("click", (ev) => {
+    const ed = ev.target.closest("[data-edit]"); if (ed) { askCode("edit", ed.dataset.edit); return; }
+    const dl = ev.target.closest("[data-del]"); if (dl) askCode("del", dl.dataset.del);
   });
 
   /* ================= 대화상자 공통 ================= */
   document.addEventListener("click", (ev) => {
     const c = ev.target.closest("[data-close]"); if (c) c.closest("dialog").close();
-    const n = ev.target.closest("[data-new]"); if (n) { $("dlgAdmin").close(); openCode(); }
   });
   document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (ev) => { if (ev.target === d) d.close(); }));
   $("dlgDetail").addEventListener("close", () => { ui.openId = null; });
 
-  /* ================= 관리자 코드 / 등록 ================= */
-  function openLogin() { $("loginForm").reset(); $("lErr").textContent = ""; $("dlgLogin").showModal(); $("lPw").focus(); }
-  // 관리자 코드 하나만 입력해요. 코드는 Firebase에 만든 관리자 계정(admin@ADMIN_EMAIL_DOMAIN)의 비밀번호예요.
-  // 코드가 이 파일에 적혀 있지 않아서, 코드를 모르면 아무도 글을 쓰거나 지울 수 없어요.
-  $("loginForm").addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    if (mode !== "shared") { $("lErr").textContent = "게시판에 연결된 뒤에 쓸 수 있어요."; return; }
-    const pw = $("lPw").value;
-    if (!pw) { $("lErr").textContent = "관리자 코드를 적어 주세요."; return; }
-    const email = `admin@${adminDomain}`;
-    const btn = ev.submitter; if (btn) btn.disabled = true;
+  /* ================= 코드 확인 / 등록 / 수정 / 삭제 ================= */
+  const CODE_TEXT = {
+    add: ["등록 코드 입력", "새 이벤트를 등록하려면 코드를 입력하세요.", "확인"],
+    edit: ["수정 코드 입력", "이 게시물을 수정하려면 코드를 입력하세요.", "확인"],
+    del: ["삭제 코드 입력", "이 게시물을 삭제하려면 코드를 입력하세요. 삭제하면 되돌릴 수 없어요.", "삭제"],
+  };
+  let pending = null, editId = null;
+  function askCode(act, id) {
+    if (mode !== "shared") { toast(OFFLINE); return; }
+    pending = { act, id };
+    const [title, msg, okText] = CODE_TEXT[act];
+    $("codeForm").reset(); $("cErr").textContent = "";
+    $("cTitle").textContent = title; $("cMsg").textContent = msg;
+    const ok = $("cOk"); ok.textContent = okText; ok.className = "btn " + (act === "del" ? "btn-danger" : "btn-primary");
+    $("dlgCode").showModal(); $("cCode").focus();
+  }
+  // 작업이 끝나면 코드 확인을 바로 풀어요
+  const lock = () => { if (auth && auth.currentUser) fb.signOut(auth).catch(() => {}); };
+  $("codeForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault(); if (!pending) return;
+    const v = $("cCode").value;
+    if (!v) { $("cErr").textContent = "코드를 입력해 주세요."; return; }
+    const btn = $("cOk"); btn.disabled = true;
     try {
-      await fb.signInWithEmailAndPassword(auth, email, pw);
-      $("dlgLogin").close(); toast("관리자 모드를 켰어요.");
+      await fb.signInWithEmailAndPassword(auth, `admin@${adminDomain}`, v);
     } catch (err) {
       const code = err && err.code;
-      $("lErr").textContent = code === "auth/too-many-requests" ? "너무 여러 번 틀렸어요. 잠시 뒤 다시 해 주세요."
+      $("cErr").textContent = code === "auth/too-many-requests" ? "너무 여러 번 틀렸어요. 잠시 뒤 다시 해 주세요."
         : code === "auth/network-request-failed" ? "인터넷 연결을 확인해 주세요."
-        : "관리자 코드가 맞지 않아요. 대문자와 소문자를 다시 확인해 주세요.";
-      $("lPw").select();
-    } finally { if (btn) btn.disabled = false; }
+        : "코드가 맞지 않아요. 대문자와 소문자를 다시 확인해 주세요.";
+      $("cCode").select(); btn.disabled = false; return;
+    }
+    btn.disabled = false;
+    const { act, id } = pending; pending = null; $("dlgCode").close();
+    if (act === "add") return openForm(null);
+    const e = events.find((x) => x.id === id);
+    if (!e) { lock(); toast("게시물을 찾지 못했어요."); return; }
+    if (act === "edit") return openForm(e);
+    const ok = await removeEvent(id); lock();
+    if (ok) { toast("게시물을 삭제했어요."); if (ui.openId === id) $("dlgDetail").close(); }
   });
 
-
-  function openCode() { $("codeForm").reset(); $("cErr").textContent = ""; $("dlgCode").showModal(); $("cCode").focus(); }
-  $("codeForm").addEventListener("submit", (ev) => {
-    ev.preventDefault();
-    const v = $("cCode").value.trim();
-    if (v.length !== 6) { $("cErr").textContent = "코드는 6자리예요."; return; }
-    if (v !== REG_CODE) { $("cErr").textContent = "등록 코드가 맞지 않아요. 대문자와 소문자를 다시 확인해 주세요."; $("cCode").select(); return; }
-    $("dlgCode").close(); openForm();
-  });
-
-  function openForm() {
+  function openForm(e) {
+    editId = e ? e.id : null;
     $("newForm").reset(); $("fErr").textContent = "";
-    const d = today0(); d.setDate(d.getDate() + 7); $("fDate").value = ymd(d);
-    $("fEnd").min = ymd(d); $("fSpan").textContent = "";
+    $("fTitle").textContent = e ? "이벤트 수정" : "새 이벤트 등록";
+    $("fOk").textContent = e ? "수정하기" : "등록하기";
+    if (e) {
+      $("fName").value = e.title || ""; $("fDate").value = e.date || ""; $("fEnd").value = e.endDate || "";
+      $("fTime").value = e.time || ""; $("fPlace").value = e.place || ""; $("fDesc").value = e.desc || "";
+      $("fApply").value = e.apply || ""; $("fLink").value = e.link || "";
+    } else {
+      const d = today0(); d.setDate(d.getDate() + 7); $("fDate").value = ymd(d);
+    }
+    showSpan();
     $("dlgForm").showModal(); $("fName").focus();
   }
+  $("dlgForm").addEventListener("close", () => { editId = null; lock(); });
   function showSpan() {
     const s = $("fDate").value, e = $("fEnd").value;
     $("fEnd").min = s || ""; $("fErr").textContent = "";
@@ -882,11 +825,15 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     if (end && end < date) return ($("fErr").textContent = "끝 날짜는 시작 날짜보다 빠를 수 없어요.");
     if (!apply) return ($("fErr").textContent = "신청 받는 곳을 적어 주세요.");
     if (link && !/^https?:\/\//i.test(link)) return ($("fErr").textContent = "링크는 https:// 로 시작해야 해요.");
-    const data = { title, date, endDate: end && end > date ? end : "", time: $("fTime").value.trim(), place: $("fPlace").value.trim(), desc: $("fDesc").value.trim(), apply, link, createdAt: Date.now() };
-    const btn = ev.submitter; if (btn) btn.disabled = true;
-    const ok = await addEvent(data);
-    if (btn) btn.disabled = false;
-    if (ok) { $("dlgForm").close(); toast(isPast(data) ? "등록했어요. 이미 끝난 날짜라서 만료 칸에 있어요." : "이벤트를 등록했어요."); }
+    const data = { title, date, endDate: end && end > date ? end : "", time: $("fTime").value.trim(), place: $("fPlace").value.trim(), desc: $("fDesc").value.trim(), apply, link };
+    const btn = $("fOk"); btn.disabled = true;
+    const id = editId;
+    const ok = id ? await saveEvent(id, data) : await addEvent({ ...data, createdAt: Date.now() });
+    btn.disabled = false;
+    if (!ok) return;
+    $("dlgForm").close();
+    if (id) toast(isPast(data) ? "수정했어요. 끝난 날짜라서 만료 칸에 있어요." : "수정했어요.");
+    else toast(isPast(data) ? "등록했어요. 이미 끝난 날짜라서 만료 칸에 있어요." : "이벤트를 등록했어요.");
   });
 
   /* ================= 메뉴 / 검색 / 탭 ================= */
@@ -899,14 +846,8 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     const b = ev.target.closest("[data-menu]"); if (!b) return;
     toggleMenu(false);
     if (b.dataset.menu === "share") { $("sMsg").textContent = ""; $("dlgShare").showModal(); }
-    if (b.dataset.menu === "login") openLogin();
-    if (b.dataset.menu === "admin") { renderAdmin(); $("dlgAdmin").showModal(); }
-    if (b.dataset.menu === "logout") {
-      if (auth) fb.signOut(auth).then(() => toast("관리자 모드를 껐어요."), () => toast("관리자 모드를 끄지 못했어요. 다시 눌러 주세요."));
-      else { setAdmin(false); render(); }
-    }
   });
-  $("addBtn").addEventListener("click", openCode);
+  $("addBtn").addEventListener("click", () => askCode("add"));
   $("copyBtn").addEventListener("click", () => {
     const inp = $("shareUrl");
     const fallback = () => { inp.focus(); inp.select(); $("sMsg").textContent = "링크를 선택해 뒀어요. Ctrl+C로 복사하세요."; };
@@ -938,7 +879,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   const savedTab = store.get("seohaering-tab");
   if (savedTab === "cal") ui.tab = "cal";
   markTabs();
-  setAdmin(false);
   $("shareUrl").value = location.href.split("#")[0];
   render();
   startShared();
