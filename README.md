@@ -13,7 +13,6 @@
 | --- | --- |
 | `index.html` | 서해링 화면 전체 (인트로, 목록, 달력, 관리자 기능) |
 | `firebase-config.js` | 내 Firebase 프로젝트 주소를 적는 곳 (**꼭 채워야 해요**) |
-| `example-events.js` | 처음에 넣어 볼 예시 이벤트 8개 |
 | `firestore.rules` | 누가 읽고 쓸 수 있는지 정하는 보안 규칙 |
 
 ---
@@ -48,16 +47,16 @@
 
 ### 5. GitHub Pages에 올리기
 1. https://github.com 에서 **New repository** → 이름 `seohaering` → **Public** → 만들기.
-2. **Add file → Upload files**로 이 폴더의 파일 5개를 모두 올리고 **Commit changes**.
+2. **Add file → Upload files**로 이 폴더의 파일 4개를 모두 올리고 **Commit changes**.
 3. 저장소의 **Settings → Pages**
    - Source: **Deploy from a branch**
    - Branch: **main** / **/(root)** → Save
 4. 1~2분 뒤 위쪽에 주소가 나와요: `https://내아이디.github.io/seohaering/`
 
-### 6. 열어 보고 예시 이벤트 넣기
+### 6. 열어 보고 첫 이벤트 등록하기
 1. 휴대폰으로 주소를 열어요. "아직 등록된 이벤트가 없어요"가 보이면 연결 성공이에요.
 2. **메뉴 → 관리자 로그인** (`admin` + 4단계에서 정한 비밀번호).
-3. **메뉴 → 관리자 메뉴 → 예시 이벤트 가져오기**를 누르면 8개가 들어가요.
+3. **+ 등록**을 눌러 첫 이벤트를 올려요.
 4. 이벤트 등록 코드는 `qwerty`예요. 바꾸려면 `index.html`에서 `REG_CODE`를 찾아 고쳐요.
 
 ---

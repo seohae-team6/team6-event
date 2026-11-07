@@ -612,7 +612,13 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
         <p class="meta">처음 설정하는 중이라면 README.md의 설정 방법을 따라 해 주세요.</p></div>`;
       return;
     }
-    if (ui.tab === "cal") { renderCal(visible, q); return; }
+    if (ui.tab === "cal") {
+      renderCal(visible, q);
+      // 달력 탭에서도 아래에 '만료된 이벤트' 칸을 보여줘요
+      expEl.hidden = !closed.length;
+      $("expList").innerHTML = closed.map(card).join("");
+      return;
+    }
     $("result").innerHTML = q
       ? `'<strong>${esc(ui.q.trim())}</strong>' 검색 결과 <strong>${visible.length}</strong>개`
       : `다가오는 이벤트 <strong>${open.length}</strong>개`;
@@ -641,7 +647,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   /* ================= 달력 ================= */
   function renderCal(visible, q) {
     const listEl = $("list");
-    $("expired").hidden = true;
     const y = ui.calMonth.getFullYear(), mo = ui.calMonth.getMonth();
     const byDate = new Map();
     visible.forEach((e) => {
@@ -771,8 +776,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     const list = events.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
     $("adminBody").innerHTML = `<div class="dlg-head"><h2 id="aTitle">관리자 메뉴</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
       <p>게시물 ${list.length}개 · 만료 ${list.filter(isPast).length}개</p>
-      ${!events.length ? `<div class="apply"><h3>처음 시작하기</h3><p>Claude 서해링에서 쓰던 예시 이벤트 8개를 한 번에 넣을 수 있어요.</p>
-        <div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-primary" data-import>예시 이벤트 가져오기</button></div></div>` : ""}
       <div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-sun" data-new>+ 이벤트 등록</button></div>
       <div class="adm-list">${list.length ? list.map((e) => `<div class="adm-item"><h3>${esc(e.title)} <span class="meta">${esc(rangeText(e))}</span></h3>${adminControls(e, "a-")}</div>`).join("") : `<div class="empty"><strong>게시물이 없어요</strong>+ 이벤트 등록으로 첫 게시물을 올려 보세요.</div>`}</div>`;
   }
@@ -841,17 +844,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     } finally { if (btn) btn.disabled = false; }
   });
 
-  // 처음 시작할 때 예시 이벤트 넣기 (example-events.js)
-  document.addEventListener("click", async (ev) => {
-    const b = ev.target.closest("[data-import]"); if (!b) return;
-    if (mode !== "shared") { toast(OFFLINE); return; }
-    b.disabled = true;
-    try {
-      const list = (await import("./example-events.js")).default;
-      for (const { id, ...data } of list) await fb.setDoc(ref(id), { ...data, createdAt: Date.now() });
-      toast(`예시 이벤트 ${list.length}개를 넣었어요.`); renderAdmin();
-    } catch (err) { toast(why(err, "예시 이벤트를 넣지 못했어요. example-events.js 파일을 확인해 주세요.")); b.disabled = false; }
-  });
 
   function openCode() { $("codeForm").reset(); $("cErr").textContent = ""; $("dlgCode").showModal(); $("cCode").focus(); }
   $("codeForm").addEventListener("submit", (ev) => {
