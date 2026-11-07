@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="서해링 - 학생 참여 이벤트를 날짜별·인원별·달력으로 모아 보는 학교 게시판">
+<meta name="description" content="서해링 - 학생 참여 이벤트를 날짜별·달력으로 모아 보는 학교 게시판">
 <title>서해링</title>
 <meta name="theme-color" content="#061319">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%23061319'/%3E%3Ccircle cx='20' cy='21' r='9' fill='%23f3b04c'/%3E%3Crect x='0' y='21' width='40' height='19' fill='%23061319'/%3E%3Cpath d='M5 25 Q 12.5 21 20 25 T 35 25' fill='none' stroke='%234fc1cf' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M9 31 Q 14.5 28 20 31 T 31 31' fill='none' stroke='%234fc1cf' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
@@ -180,9 +180,9 @@ main {
 .cap-text b { font-weight: 700; }
 .left-hot { color: var(--sun); font-weight: 700; }
 
-.card.full { border-style: dashed; }
-.card.full .when { background: var(--full-soft); color: var(--full); }
-.card.full .meter i { background: var(--full); }
+.card.expired { border-style: dashed; }
+.card.expired .when { background: var(--full-soft); color: var(--full); }
+.warn { background: var(--sun-soft); color: var(--ink); border-left: 4px solid var(--sun); border-radius: 8px; padding: 10px 14px; font-weight: 600; margin-top: -6px; }
 .pill { display: inline-block; font-size: .8rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--full-soft); color: var(--full); }
 
 /* 달력 */
@@ -264,7 +264,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
 .span-note { color: var(--sun); font-weight: 700; min-height: 1.6em; margin-top: -8px; }
 .check { display: flex; align-items: center; gap: 12px; min-height: 52px; font-weight: 600; cursor: pointer; }
 .check input { width: 26px; height: 26px; margin: 0; accent-color: var(--sea); flex: none; }
-.adm.unl .max-step { opacity: .35; pointer-events: none; }
 .span-tag { font-weight: 700; color: var(--sun); }
 .pill.free { background: var(--sea-soft); color: var(--sea); }
 .when .d.range { font-size: 1.1rem; line-height: 1.5; }
@@ -353,7 +352,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   <div class="toolbar">
     <div class="tabs" role="tablist" aria-label="보기 방식">
       <button type="button" role="tab" id="tabDate" aria-selected="true">날짜별</button>
-      <button type="button" role="tab" id="tabSize" aria-selected="false">인원별</button>
       <button type="button" role="tab" id="tabCal" aria-selected="false">달력</button>
     </div>
     <button class="btn btn-sun" id="addBtn" type="button" hidden>+ 등록</button>
@@ -361,8 +359,8 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   <p class="result" id="result" aria-live="polite"></p>
   <section id="list" aria-label="참여 가능한 이벤트"></section>
   <section class="expired" id="expired" aria-labelledby="expTitle" hidden>
-    <h2 id="expTitle">마감된 이벤트</h2>
-    <p>정원이 다 찬 이벤트예요. 7일 뒤 자동으로 지워지고, 자리가 다시 나면 위 목록으로 돌아가요.</p>
+    <h2 id="expTitle">만료된 이벤트</h2>
+    <p>날짜가 끝난 이벤트예요. 관리자가 지울 때까지 여기에 남아 있어요.</p>
     <div class="cards" id="expList"></div>
   </section>
 </main>
@@ -386,7 +384,8 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   <form class="dlg" id="codeForm" novalidate>
     <div class="dlg-head"><h2 id="cTitle">등록 코드 입력</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
     <p>이벤트를 등록하려면 6자리 등록 코드를 입력하세요.</p>
-    <div class="field"><label for="cCode">등록 코드</label><input id="cCode" class="code-input" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="field"><label for="cCode">등록 코드</label><input id="cCode" class="code-input" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="cWarn"></div>
+    <p class="warn" id="cWarn">⚠ 대문자와 소문자를 구분해요. 정확히 입력해 주세요.</p>
     <p class="err" id="cErr" aria-live="polite"></p>
     <div class="actions"><button class="btn btn-ghost" type="button" data-close>취소</button><button class="btn btn-primary" type="submit">확인</button></div>
   </form>
@@ -404,11 +403,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     <p class="span-note" id="fSpan" aria-live="polite"></p>
     <div class="field"><label for="fTime">시간</label><input id="fTime" placeholder="예: 점심시간 12:40"></div>
     <div class="field"><label for="fPlace">장소</label><input id="fPlace" maxlength="60"></div>
-    <label class="check" for="fUnl"><input type="checkbox" id="fUnl"> 인원 제한 없음</label>
-    <div class="row2">
-      <div class="field" id="fMaxWrap"><label for="fMax">최대 인원</label><input id="fMax" type="number" min="1" inputmode="numeric" value="20"></div>
-      <div class="field"><label for="fJoin">현재 참여 인원</label><input id="fJoin" type="number" min="0" inputmode="numeric" value="0"></div>
-    </div>
     <div class="field"><label for="fDesc">이벤트 설명</label><textarea id="fDesc" maxlength="1000"></textarea></div>
     <div class="field"><label for="fApply">신청 받는 곳</label><input id="fApply" maxlength="100" placeholder="예: 2층 학생회실 앞 신청함"></div>
     <div class="field"><label for="fLink">온라인 신청 링크 (선택)</label><input id="fLink" type="url" placeholder="https://"></div>
@@ -516,18 +510,17 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     if (a <= t && spanDays(e) > 1) return "진행 중";
     return dday(e.date);
   };
+  // 끝 날짜(하루짜리는 그날)가 지나면 목록에서 숨김. 달력과 관리자 메뉴에는 그대로 보여요.
+  const isPast = (e) => { const b = parse(endOf(e)); return !!b && b < today0(); };
   const rangeText = (e) => spanDays(e) > 1 ? `${shortDate(e.date)} ~ ${shortDate(endOf(e))} · ${spanDays(e)}일간` : longDate(e.date);
 
   /* ================= 데이터 (Firebase) ================= */
   const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
   let events = [], loaded = false, loadNote = "", offlineNote = "", mode = "starting";
   let fb = null, fs = null, auth = null, adminDomain = "seohaering.app";
-  const triedDelete = new Set();
 
-  const isUnl = (e) => !!e.unlimited;
-  const isFull = (e) => !isUnl(e) && Number(e.joined) >= Number(e.max);
-  const isGone = (e) => isFull(e) && e.fullAt && Date.now() - e.fullAt >= WEEK;
-  const daysLeft = (e) => Math.max(1, Math.ceil((WEEK - (Date.now() - (e.fullAt || Date.now()))) / 864e5));
+  // 만료 = 끝 날짜(하루짜리는 그날)가 지난 이벤트 → '만료된 이벤트' 칸으로 내려가요.
+  // 자동으로 지우지 않고, 관리자가 '게시물 삭제'로 지울 때까지 그대로 남아 있어요.
 
   // Firebase에 연결하지 못하면 이유를 보여줌
   function startOffline(note) { mode = "offline"; offlineNote = note; events = []; loaded = true; render(); }
@@ -543,13 +536,15 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       const [appM, fsM, authM] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-firestore.js"), import(FB + "firebase-auth.js")]);
       const app = appM.initializeApp(c);
       fb = { ...fsM, ...authM }; fs = fsM.getFirestore(app); auth = authM.getAuth(app);
+      // 관리자 로그인은 브라우저 창(탭)을 닫으면 풀려요. 공용 컴퓨터에서 로그인이 남지 않게.
+      try { await authM.setPersistence(auth, authM.browserSessionPersistence); } catch {}
     } catch { return startOffline("Firebase에 연결하지 못했어요. 인터넷 연결을 확인해 주세요."); }
     mode = "shared";
-    fb.onAuthStateChanged(auth, (u) => { setAdmin(!!u); render(); refreshOpen(); if (u) cleanup(); });
+    fb.onAuthStateChanged(auth, (u) => { setAdmin(!!u); render(); refreshOpen(); });
     const timer = setTimeout(() => { if (!loaded) { loadNote = "이벤트를 아직 불러오지 못했어요. 인터넷 연결을 확인해 주세요."; render(); } }, 10000);
     fb.onSnapshot(fb.collection(fs, "events"), (snap) => {
       events = snap.docs.map((x) => ({ ...x.data(), id: x.id }));
-      clearTimeout(timer); loadNote = ""; loaded = true; cleanup(); render(); refreshOpen();
+      clearTimeout(timer); loadNote = ""; loaded = true; render(); refreshOpen();
     }, (err) => {
       clearTimeout(timer); loaded = true;
       loadNote = err && err.code === "permission-denied" ? "이벤트를 읽을 권한이 없어요. Firestore 보안 규칙을 확인해 주세요." : "이벤트를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.";
@@ -557,26 +552,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     });
   }
   const ref = (id) => fb.doc(fs, "events", id);
-
-  // 정원이 찬 지 7일 지난 이벤트는 자동 삭제 (관리자가 로그인해 있을 때 실행)
-  function cleanup() {
-    const old = events.filter(isGone);
-    if (!old.length || mode !== "shared" || !auth || !auth.currentUser) return;
-    for (const e of old) {
-      if (triedDelete.has(e.id)) continue;
-      triedDelete.add(e.id);
-      fb.deleteDoc(ref(e.id)).catch(() => {});
-    }
-  }
-
-  function withCounts(e, max, joined, unlimited) {
-    max = Math.max(1, Math.floor(Number(max) || Number(e.max) || 1));
-    joined = Math.max(0, Math.floor(Number(joined) || 0));
-    if (unlimited) return { unlimited: true, max, joined, fullAt: null };
-    joined = Math.min(max, joined);
-    const full = joined >= max;
-    return { unlimited: false, max, joined, fullAt: full ? (isFull(e) && e.fullAt ? e.fullAt : Date.now()) : null };
-  }
 
   const NO_RIGHT = "저장하지 못했어요. 관리자 계정으로 로그인했는지 확인해 주세요.";
   const OFFLINE = "Firebase에 연결된 뒤에 저장할 수 있어요.";
@@ -605,41 +580,26 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   }
 
   /* ================= 목록 그리기 ================= */
-  // 인원 표시 (카드와 상세 화면에서 같이 씀)
-  function capHTML(e, detail) {
-    if (isUnl(e)) return `<div class="cap"><span class="cap-text"><b>${Number(e.joined)}</b>명 참여 · <span class="pill free">인원 제한 없음</span></span></div>`;
-    const full = isFull(e), left = Math.max(0, e.max - e.joined);
-    const pct = Math.min(100, Math.round((Number(e.joined) / Math.max(1, Number(e.max))) * 100));
-    const hot = !full && left <= Math.max(2, Math.ceil(e.max * 0.15));
-    const tail = detail ? `남은 자리 ${left}`
-      : full ? `<span class="pill">정원 마감 · ${daysLeft(e)}일 뒤 삭제</span>` : `<span class="${hot ? "left-hot" : ""}">남은 자리 ${left}</span>`;
-    return `<div class="cap"><div class="meter${hot ? " hot" : ""}"><i style="width:${pct}%"></i></div>
-      <span class="cap-text"><b>${Number(e.joined)}</b> / ${Number(e.max)}명${detail ? " 참여" : ""} · ${tail}</span></div>`;
-  }
-
   function card(e) {
-    const d = parse(e.date), d2 = parse(endOf(e)), full = isFull(e), multi = spanDays(e) > 1;
+    const d = parse(e.date), d2 = parse(endOf(e)), expired = isPast(e), multi = spanDays(e) > 1;
     const mLabel = !d ? "미정" : multi && d2.getMonth() !== d.getMonth() ? `${d.getMonth() + 1}~${d2.getMonth() + 1}월` : `${d.getMonth() + 1}월`;
     const dLabel = !d ? "-" : multi ? `${d.getDate()}~${d2.getDate()}` : d.getDate();
-    return `<button type="button" class="card${full ? " full" : ""}" data-id="${esc(e.id)}">
+    return `<button type="button" class="card${expired ? " expired" : ""}" data-id="${esc(e.id)}">
       <div class="when"><span class="m">${mLabel}</span><span class="d${multi ? " range" : ""}">${dLabel}</span><span class="dd">${esc(evDday(e))}</span></div>
       <div class="info">
         <h3>${esc(e.title)}</h3>
         <p class="meta">${multi ? `<span class="span-tag">${spanDays(e)}일간</span> · ` : ""}${esc(e.place || "장소 미정")}${e.time ? " · " + esc(e.time) : ""}</p>
-        ${capHTML(e, false)}
+        ${expired ? `<span><span class="pill">만료</span></span>` : ""}
       </div>
     </button>`;
   }
 
-  function sizeGroup(e) { if (isUnl(e)) return 3; const m = Number(e.max); return m <= 10 ? 0 : m <= 30 ? 1 : 2; }
-  const SIZE_NAMES = [["소규모", "10명 이하"], ["중규모", "11~30명"], ["대규모", "31명 이상"], ["인원 제한 없음", "누구나 참여할 수 있어요"]];
-
   function render() {
     const listEl = $("list"), expEl = $("expired");
     const q = ui.q.trim().toLowerCase();
-    const visible = events.filter((e) => !isGone(e) && (!q || String(e.title || "").toLowerCase().includes(q)));
-    const open = visible.filter((e) => !isFull(e));
-    const closed = visible.filter(isFull).sort((a, b) => (a.fullAt || 0) - (b.fullAt || 0));
+    const visible = events.filter((e) => !q || String(e.title || "").toLowerCase().includes(q));
+    const open = visible.filter((e) => !isPast(e));
+    const closed = visible.filter(isPast).sort((a, b) => String(endOf(b)).localeCompare(String(endOf(a))));
 
     if (!loaded) {
       listEl.innerHTML = `<div class="empty"><strong>이벤트를 불러오는 중이에요</strong>${esc(loadNote)}</div>`;
@@ -655,14 +615,14 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     if (ui.tab === "cal") { renderCal(visible, q); return; }
     $("result").innerHTML = q
       ? `'<strong>${esc(ui.q.trim())}</strong>' 검색 결과 <strong>${visible.length}</strong>개`
-      : `신청할 수 있는 이벤트 <strong>${open.length}</strong>개`;
+      : `다가오는 이벤트 <strong>${open.length}</strong>개`;
 
     if (!open.length) {
       listEl.innerHTML = `<div class="empty">${q
         ? `<strong>'${esc(ui.q.trim())}' 이름의 이벤트가 없어요</strong>다른 낱말로 찾아보세요.`
-        : events.length ? `<strong>지금 신청할 수 있는 이벤트가 없어요</strong>새 이벤트가 올라오면 여기에 보여요.`
+        : events.length ? `<strong>다가오는 이벤트가 없어요</strong>새 이벤트가 올라오면 여기에 보여요.`
         : `<strong>아직 등록된 이벤트가 없어요</strong>관리자가 이벤트를 등록하면 여기에 보여요.`}${loadNote ? "<br>" + esc(loadNote) : ""}</div>`;
-    } else if (ui.tab === "date") {
+    } else {
       // 이미 시작해서 진행 중인 이벤트는 '오늘' 묶음에 보여줌
       const t = ymd(today0());
       const key = (e) => (String(e.date) < t && String(endOf(e)) >= t ? t : String(e.date));
@@ -673,12 +633,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       listEl.innerHTML = [...by].map(([date, arr]) => `<div class="group">
         <div class="group-head"><h2>${esc(longDate(date))}</h2><span>${esc(dday(date))}</span></div>
         <div class="cards">${arr.map(card).join("")}</div></div>`).join("");
-    } else {
-      const groups = [[], [], [], []];
-      open.forEach((e) => groups[sizeGroup(e)].push(e));
-      listEl.innerHTML = groups.map((arr, i) => arr.length ? `<div class="group">
-        <div class="group-head"><h2>${SIZE_NAMES[i][0]}</h2><span>${SIZE_NAMES[i][1]}${i < 3 ? " · 남은 자리 적은 순" : ""}</span></div>
-        <div class="cards">${(i < 3 ? arr.sort((a, b) => (a.max - a.joined) - (b.max - b.joined)) : arr.sort((a, b) => String(a.date).localeCompare(String(b.date)))).map(card).join("")}</div></div>` : "").join("");
     }
     expEl.hidden = !closed.length;
     $("expList").innerHTML = closed.map(card).join("");
@@ -698,7 +652,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
         if (!byDate.has(s)) byDate.set(s, []); byDate.get(s).push(e);
       }
     });
-    byDate.forEach((arr) => arr.sort((a, b) => isFull(a) - isFull(b)));
+    byDate.forEach((arr) => arr.sort((a, b) => isPast(a) - isPast(b)));
     const first = new Date(y, mo, 1), last = new Date(y, mo + 1, 0);
     const cellsN = Math.ceil((first.getDay() + last.getDate()) / 7) * 7;
     const todayS = ymd(today0());
@@ -710,9 +664,9 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       const label = `${d.getMonth() + 1}월 ${d.getDate()}일${arr.length ? `, 이벤트 ${arr.length}개` : ""}`;
       cells += `<button type="button" class="${cls}" data-day="${s}" aria-pressed="${s === ui.calDay}" aria-label="${label}">
         <span class="num">${d.getDate()}</span>
-        ${arr.slice(0, 2).map((e) => `<span class="chip${isFull(e) ? " full" : ""}" data-open="${esc(e.id)}">${esc(e.title)}</span>`).join("")}
+        ${arr.slice(0, 2).map((e) => `<span class="chip${isPast(e) ? " full" : ""}" data-open="${esc(e.id)}">${esc(e.title)}</span>`).join("")}
         ${arr.length > 2 ? `<span class="more">+${arr.length - 2}개 더</span>` : ""}
-        <span class="dots">${arr.slice(0, 4).map((e) => `<i class="${isFull(e) ? "full" : ""}"></i>`).join("")}</span>
+        <span class="dots">${arr.slice(0, 4).map((e) => `<i class="${isPast(e) ? "full" : ""}"></i>`).join("")}</span>
       </button>`;
     }
     const dayArr = byDate.get(ui.calDay) || [], monthCount = monthIds.size;
@@ -732,7 +686,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
           ${DAYS.map((w, i) => `<div class="cal-wd${i === 0 ? " sun" : i === 6 ? " sat" : ""}">${w}</div>`).join("")}
           ${cells}
         </div>
-        <div class="cal-legend"><span>신청 가능</span><span class="lg-full">정원 마감</span></div>
+        <div class="cal-legend"><span>다가오는 이벤트</span><span class="lg-full">만료</span></div>
       </div>
       <div class="group">
         <div class="group-head"><h2>${esc(longDate(ui.calDay))}</h2><span>${esc(dday(ui.calDay))}</span></div>
@@ -766,23 +720,12 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
 
   /* ================= 상세 화면 ================= */
   function adminControls(e, prefix) {
-    const id = esc(e.id), unl = isUnl(e);
-    return `<div class="adm${unl ? " unl" : ""}" data-adm="${id}">
-      <h3>관리자 · 기간과 인원</h3>
+    const id = esc(e.id);
+    return `<div class="adm" data-adm="${id}">
+      <h3>관리자 · 기간</h3>
       <div class="row2">
         <div class="field"><label for="${prefix}start-${id}">시작 날짜</label><input type="date" id="${prefix}start-${id}" data-f="start" value="${esc(e.date || "")}"></div>
         <div class="field"><label for="${prefix}end-${id}">끝 날짜</label><input type="date" id="${prefix}end-${id}" data-f="end" value="${esc(endOf(e) || "")}"></div>
-      </div>
-      <label class="check" for="${prefix}unl-${id}"><input type="checkbox" id="${prefix}unl-${id}" data-f="unl"${unl ? " checked" : ""}> 인원 제한 없음</label>
-      <div class="steppers">
-        <label class="stepper max-step"><span>최대 인원</span><div>
-          <button type="button" data-step="max" data-d="-1" aria-label="최대 인원 줄이기">−</button>
-          <input type="number" id="${prefix}max-${esc(e.id)}" data-f="max" min="1" inputmode="numeric" value="${Number(e.max)}">
-          <button type="button" data-step="max" data-d="1" aria-label="최대 인원 늘리기">+</button></div></label>
-        <label class="stepper"><span>참여 인원</span><div>
-          <button type="button" data-step="joined" data-d="-1" aria-label="참여 인원 줄이기">−</button>
-          <input type="number" id="${prefix}joined-${esc(e.id)}" data-f="joined" min="0" inputmode="numeric" value="${Number(e.joined)}">
-          <button type="button" data-step="joined" data-d="1" aria-label="참여 인원 늘리기">+</button></div></label>
       </div>
       <div class="actions">
         <button type="button" class="btn btn-danger" data-del>게시물 삭제</button>
@@ -792,7 +735,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   }
 
   function detailHTML(e) {
-    const full = isFull(e);
     const safeLink = /^https?:\/\//i.test(e.link || "") ? e.link : "";
     return `<div class="dlg-head"><h2 id="dTitle">${esc(e.title)}</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
       <dl class="facts">
@@ -800,8 +742,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
         <dt>시간</dt><dd>${esc(e.time || "미정")}</dd>
         <dt>장소</dt><dd>${esc(e.place || "미정")}</dd>
       </dl>
-      ${capHTML(e, true)}
-      ${full ? `<p class="full-msg">정원이 다 찼어요. 자리가 나면 다시 신청할 수 있어요. (${daysLeft(e)}일 뒤 자동 삭제)</p>` : ""}
+      ${isPast(e) ? `<p class="full-msg">끝난 이벤트예요.</p>` : ""}
       <p class="desc">${esc(e.desc || "설명이 없어요.")}</p>
       <div class="apply"><h3>신청 받는 곳</h3><p>${esc(e.apply || "미정")}</p>
         ${safeLink ? `<a href="${esc(safeLink)}" target="_blank" rel="noopener">온라인으로 신청하기 ↗</a>` : ""}</div>
@@ -818,17 +759,18 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     if (d.open && ui.openId) {
       const e = events.find((x) => x.id === ui.openId);
       if (!e) { d.close(); return; }
-      if (!d.contains(document.activeElement) || !document.activeElement.matches("input")) $("detailBody").innerHTML = detailHTML(e);
+      // 관리자가 바꾸고 아직 저장 안 한 값이 있으면 화면을 새로 그리지 않아요
+      if (!d.querySelector("[data-adm][data-dirty]")) $("detailBody").innerHTML = detailHTML(e);
     }
     const a = $("dlgAdmin");
-    if (a.open && !(a.contains(document.activeElement) && document.activeElement.matches("input"))) renderAdmin();
+    if (a.open && !a.querySelector("[data-adm][data-dirty]")) renderAdmin();
   }
 
   /* ================= 관리자 메뉴 ================= */
   function renderAdmin() {
-    const list = events.filter((e) => !isGone(e)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    const list = events.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
     $("adminBody").innerHTML = `<div class="dlg-head"><h2 id="aTitle">관리자 메뉴</h2><button class="x" type="button" data-close aria-label="닫기">×</button></div>
-      <p>게시물 ${list.length}개 · 정원 마감 ${list.filter(isFull).length}개</p>
+      <p>게시물 ${list.length}개 · 만료 ${list.filter(isPast).length}개</p>
       ${!events.length ? `<div class="apply"><h3>처음 시작하기</h3><p>Claude 서해링에서 쓰던 예시 이벤트 8개를 한 번에 넣을 수 있어요.</p>
         <div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-primary" data-import>예시 이벤트 가져오기</button></div></div>` : ""}
       <div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-sun" data-new>+ 이벤트 등록</button></div>
@@ -839,24 +781,14 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   document.addEventListener("click", async (ev) => {
     const box = ev.target.closest("[data-adm]"); if (!box) return;
     const id = box.dataset.adm, e = events.find((x) => x.id === id); if (!e) return;
-    const maxI = box.querySelector('[data-f="max"]'), joinI = box.querySelector('[data-f="joined"]');
-    const step = ev.target.closest("[data-step]");
-    if (step) {
-      const inp = step.dataset.step === "max" ? maxI : joinI;
-      const min = step.dataset.step === "max" ? 1 : 0;
-      inp.value = Math.max(min, (Number(inp.value) || 0) + Number(step.dataset.d));
-      if (!box.classList.contains("unl") && Number(joinI.value) > Number(maxI.value)) joinI.value = maxI.value;
-      return;
-    }
     if (ev.target.closest("[data-save]")) {
       const start = box.querySelector('[data-f="start"]').value, end = box.querySelector('[data-f="end"]').value;
-      const unl = box.querySelector('[data-f="unl"]').checked;
       if (!start) { toast("시작 날짜를 골라 주세요."); return; }
       if (end && end < start) { toast("끝 날짜는 시작 날짜보다 빠를 수 없어요."); return; }
-      const patch = { ...withCounts(e, maxI.value, joinI.value, unl), date: start, endDate: end && end > start ? end : "" };
-      maxI.value = patch.max; joinI.value = patch.joined;
-      const wasFull = isFull(e), nowFull = !!patch.fullAt;
-      if (await saveEvent(id, patch)) toast(nowFull && !wasFull ? "정원이 다 차서 마감 칸으로 옮겼어요." : !nowFull && wasFull ? "다시 참여할 수 있어서 원래 목록으로 돌려놨어요." : "저장했어요.");
+      const patch = { date: start, endDate: end && end > start ? end : "" };
+      const was = isPast(e), now = isPast(patch);
+      delete box.dataset.dirty;
+      if (await saveEvent(id, patch)) toast(now && !was ? "끝난 날짜라서 만료 칸으로 옮겼어요." : !now && was ? "날짜가 바뀌어서 다시 목록에 보여요." : "저장했어요.");
       return;
     }
     const del = ev.target.closest("[data-del]");
@@ -870,12 +802,13 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     }
   });
 
-  // '인원 제한 없음'을 켜고 끄면 최대 인원 칸을 잠그거나 풀어 줌
+  // 관리자 칸에 직접 입력하면 '저장 안 한 값 있음'으로 표시
+  document.addEventListener("input", (ev) => {
+    const box = ev.target.closest("[data-adm]"); if (box) box.dataset.dirty = "1";
+  });
+
   document.addEventListener("change", (ev) => {
-    const c = ev.target.closest('[data-f="unl"]'); if (!c) return;
-    const box = c.closest("[data-adm]"); box.classList.toggle("unl", c.checked);
-    const maxI = box.querySelector('[data-f="max"]'), joinI = box.querySelector('[data-f="joined"]');
-    if (!c.checked && Number(joinI.value) > Number(maxI.value)) maxI.value = joinI.value;
+    const box = ev.target.closest("[data-adm]"); if (box) box.dataset.dirty = "1";
   });
 
   /* ================= 대화상자 공통 ================= */
@@ -915,10 +848,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     b.disabled = true;
     try {
       const list = (await import("./example-events.js")).default;
-      for (const { id, ...data } of list) {
-        const full = !data.unlimited && Number(data.joined) >= Number(data.max);
-        await fb.setDoc(ref(id), { ...data, fullAt: full ? Date.now() : null, createdAt: Date.now() });
-      }
+      for (const { id, ...data } of list) await fb.setDoc(ref(id), { ...data, createdAt: Date.now() });
       toast(`예시 이벤트 ${list.length}개를 넣었어요.`); renderAdmin();
     } catch (err) { toast(why(err, "예시 이벤트를 넣지 못했어요. example-events.js 파일을 확인해 주세요.")); b.disabled = false; }
   });
@@ -928,14 +858,14 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     ev.preventDefault();
     const v = $("cCode").value.trim();
     if (v.length !== 6) { $("cErr").textContent = "코드는 6자리예요."; return; }
-    if (v !== REG_CODE) { $("cErr").textContent = "등록 코드가 맞지 않아요."; $("cCode").select(); return; }
+    if (v !== REG_CODE) { $("cErr").textContent = "등록 코드가 맞지 않아요. 대문자와 소문자를 다시 확인해 주세요."; $("cCode").select(); return; }
     $("dlgCode").close(); openForm();
   });
 
   function openForm() {
     $("newForm").reset(); $("fErr").textContent = "";
     const d = today0(); d.setDate(d.getDate() + 7); $("fDate").value = ymd(d);
-    $("fEnd").min = ymd(d); $("fMaxWrap").hidden = false; $("fSpan").textContent = "";
+    $("fEnd").min = ymd(d); $("fSpan").textContent = "";
     $("dlgForm").showModal(); $("fName").focus();
   }
   function showSpan() {
@@ -945,7 +875,6 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   }
   $("fDate").addEventListener("input", showSpan);
   $("fEnd").addEventListener("input", showSpan);
-  $("fUnl").addEventListener("change", () => { $("fMaxWrap").hidden = $("fUnl").checked; });
   $("newForm").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const title = $("fName").value.trim(), date = $("fDate").value, apply = $("fApply").value.trim(), link = $("fLink").value.trim();
@@ -955,11 +884,11 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
     if (end && end < date) return ($("fErr").textContent = "끝 날짜는 시작 날짜보다 빠를 수 없어요.");
     if (!apply) return ($("fErr").textContent = "신청 받는 곳을 적어 주세요.");
     if (link && !/^https?:\/\//i.test(link)) return ($("fErr").textContent = "링크는 https:// 로 시작해야 해요.");
-    const counts = withCounts({ joined: 0, max: 1 }, $("fMax").value, $("fJoin").value, $("fUnl").checked);
+    const data = { title, date, endDate: end && end > date ? end : "", time: $("fTime").value.trim(), place: $("fPlace").value.trim(), desc: $("fDesc").value.trim(), apply, link, createdAt: Date.now() };
     const btn = ev.submitter; if (btn) btn.disabled = true;
-    const ok = await addEvent({ title, date, endDate: end && end > date ? end : "", time: $("fTime").value.trim(), place: $("fPlace").value.trim(), desc: $("fDesc").value.trim(), apply, link, ...counts, createdAt: Date.now() });
+    const ok = await addEvent(data);
     if (btn) btn.disabled = false;
-    if (ok) { $("dlgForm").close(); toast(counts.fullAt ? "등록했어요. 정원이 다 차서 마감 칸에 있어요." : "이벤트를 등록했어요."); }
+    if (ok) { $("dlgForm").close(); toast(isPast(data) ? "등록했어요. 이미 끝난 날짜라서 만료 칸에 있어요." : "이벤트를 등록했어요."); }
   });
 
   /* ================= 메뉴 / 검색 / 탭 ================= */
@@ -997,11 +926,9 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   }
   function markTabs() {
     $("tabDate").setAttribute("aria-selected", String(ui.tab === "date"));
-    $("tabSize").setAttribute("aria-selected", String(ui.tab === "size"));
     $("tabCal").setAttribute("aria-selected", String(ui.tab === "cal"));
   }
   $("tabDate").addEventListener("click", () => setTab("date"));
-  $("tabSize").addEventListener("click", () => setTab("size"));
   $("tabCal").addEventListener("click", () => setTab("cal"));
 
   document.addEventListener("click", (ev) => { const c = ev.target.closest(".card[data-id]"); if (c) openDetail(c.dataset.id); });
@@ -1011,13 +938,13 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
 
   /* ================= 시작 ================= */
   const savedTab = store.get("seohaering-tab");
-  if (savedTab === "size" || savedTab === "cal") ui.tab = savedTab;
+  if (savedTab === "cal") ui.tab = "cal";
   markTabs();
   setAdmin(false);
   $("shareUrl").value = location.href.split("#")[0];
   render();
   startShared();
-  setInterval(() => { if (loaded) { cleanup(); render(); } }, 60 * 1000);
+  setInterval(() => { if (loaded) render(); }, 60 * 1000);
 })();
 </script>
 </body>
