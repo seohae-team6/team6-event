@@ -536,6 +536,18 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
 
   /* ================= 데이터 (Firebase) ================= */
   const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
+  // Firebase 설정 (예전 firebase-config.js 내용). 이 값들은 공개돼도 괜찮아요.
+  // 누가 글을 쓰고 지울 수 있는지는 Firebase의 보안 규칙(firestore.rules)이 지켜 줘요.
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAW8NBHFgO6LMDxnM9zdwzfJFh2AllSZJc",
+    authDomain: "seohaering.firebaseapp.com",
+    projectId: "seohaering",
+    storageBucket: "seohaering.firebasestorage.app",
+    messagingSenderId: "198968540416",
+    appId: "1:198968540416:web:041d0960dde78883cf07e5",
+  };
+  // 관리자 계정 이메일의 @ 뒤 주소예요. 코드를 넣으면 admin@seohaering.app 계정으로 확인해요.
+  const ADMIN_EMAIL_DOMAIN = "seohaering.app";
   let events = [], loaded = false, loadNote = "", offlineNote = "", mode = "starting";
   let fb = null, fs = null, auth = null, adminDomain = "seohaering.app";
 
@@ -546,12 +558,9 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
   function startOffline(note) { mode = "offline"; offlineNote = note; events = []; loaded = true; render(); }
 
   async function startShared() {
-    let cfg;
-    try { cfg = await import("./firebase-config.js"); }
-    catch { return startOffline("firebase-config.js 파일을 찾지 못했어요. index.html과 같은 곳에 올렸는지 확인해 주세요."); }
-    const c = cfg.firebaseConfig || {};
-    if (!c.apiKey || !c.projectId || /여기에/.test(c.apiKey + c.projectId)) return startOffline("firebase-config.js에 Firebase 설정값을 아직 넣지 않았어요.");
-    if (cfg.ADMIN_EMAIL_DOMAIN) adminDomain = cfg.ADMIN_EMAIL_DOMAIN;
+    const c = FIREBASE_CONFIG;
+    if (!c.apiKey || !c.projectId) return startOffline("index.html 안의 FIREBASE_CONFIG에 Firebase 설정값이 없어요.");
+    adminDomain = ADMIN_EMAIL_DOMAIN;
     try {
       const [appM, fsM, authM] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-firestore.js"), import(FB + "firebase-auth.js")]);
       const app = appM.initializeApp(c);
@@ -622,7 +631,7 @@ dialog::backdrop { background: rgba(6, 19, 25, .55); }
       $("result").textContent = ""; expEl.hidden = true;
       listEl.innerHTML = `<div class="empty connect"><strong>서해링 게시판에 연결되지 않았어요</strong>
         <p>${esc(offlineNote)}</p>
-        <p class="meta">처음 설정하는 중이라면 README.md의 설정 방법을 따라 해 주세요.</p></div>`;
+        <p class="meta">인터넷 연결을 확인하고 잠시 뒤 다시 열어 주세요.</p></div>`;
       return;
     }
     if (ui.tab === "cal") {
