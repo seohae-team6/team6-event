@@ -15,7 +15,6 @@ export const firebaseConfig = {
   appId: "1:198968540416:web:041d0960dde78883cf07e5",
 };
 
-// 관리자 로그인 아이디 뒤에 자동으로 붙는 주소예요.
-// 로그인 창에 'admin'이라고 적으면 admin@seohaering.app 계정으로 로그인해요.
-// (Firebase에서 만든 관리자 계정의 이메일과 맞아야 해요)
+// 관리자 계정 이메일의 @ 뒤 주소예요. 코드를 넣으면 admin@seohaering.app 계정으로 확인해요.
+// (Firebase Authentication에 만든 관리자 계정의 이메일과 맞아야 해요)
 export const ADMIN_EMAIL_DOMAIN = "seohaering.app";
